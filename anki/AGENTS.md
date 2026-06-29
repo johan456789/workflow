@@ -1,6 +1,7 @@
 # Anki Workflow
 
 This is the personal Anki flashcard workflow. For API mechanics (request format, helper scripts, action categories), use the `anki-connect` skill.
+After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report card status (new or not).
 
 ## Deck names
 
