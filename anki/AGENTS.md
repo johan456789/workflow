@@ -151,3 +151,29 @@ Prioritize Pexels. Download multiple images at a time to reduce request approval
 ## Adding videos
 
 Refer to [external-resources/video.md](external-resources/video.md) for formats and sources.
+
+## Starting Anki from terminal
+
+If Anki is not running and the AnkiConnect server is unavailable, you can launch Anki from the terminal.
+
+### macOS
+
+```bash
+open -a Anki
+```
+
+If Anki is not in `/Applications/`, find it with: `mdfind "kMDItemKind == 'Application'" | grep -i anki`
+
+### Linux
+
+```bash
+anki
+```
+
+### Windows (Command Prompt / PowerShell)
+
+```cmd
+"C:\Program Files\Anki\anki.exe"
+```
+
+If the above path doesn't work, check `C:\Users\<username>\AppData\Local\Programs\Anki\anki.exe` or search for `anki.exe`.
