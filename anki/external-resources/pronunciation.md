@@ -91,3 +91,39 @@ This endpoint is not as good as the previous one. So only use it as a fallback.
 ```url
 https://audio1.spanishdict.com/audio?lang=es&text={word}
 ```
+
+Output filename format: `sd_{word}_audio1_fallback.mp3`
+
+## Cleanup
+
+SpanishDict source files often have a "millennial pause" — a 200-1800ms block of silence prepended before the actual word. TTS output does not have this problem and does not need cleanup. Trim downloaded files before adding them to a deck.
+
+### Measure before trimming
+
+Use ffmpeg's `silencedetect` to scan a single file's leading silence:
+
+```sh
+ffmpeg -i audio.mp3 -af "silencedetect=n=-40dB:d=0.01" -f null - 2>&1 | grep silence
+```
+
+For a batch scan, loop over a glob and run the same command per file.
+
+### Trim a single file in place
+
+```sh
+./trim-silence.sh /tmp/sd_latam_foo.mp3
+```
+
+### Batch trim a deck's audio in parallel
+
+```sh
+./trim-silence.sh -j 8 \
+  "/path/to/Anki2/User 1/collection.media"/sd_latam_*.mp3
+```
+
+The script uses ffmpeg's `silenceremove` filter (`start_periods=1`, `start_silence=0.01`, `start_threshold=-40dB`). It writes to a temp file and only `mv`s it over the original if the output is non-empty, so a failed trim cannot corrupt the input.
+
+### When NOT to trim
+
+- TTS files (ElevenLabs, Google, Cartesia) — already start at the word.
+- Files that have meaningful intro audio (music, jingle) before the word — the −40 dB threshold leaves these alone.
