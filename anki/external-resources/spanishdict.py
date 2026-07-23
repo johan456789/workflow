@@ -33,7 +33,7 @@ class SpanishDictError(Exception):
 
 def fetch_pronunciation_page(query: str, timeout: int = DEFAULT_TIMEOUT_SECONDS) -> str:
     """Fetch the pronunciation page HTML for a given query."""
-    url = f"{SPANISHDICT_BASE_URL}/{query}"
+    url = f"{SPANISHDICT_BASE_URL}/{query}?langFrom=es"
     headers = {"User-Agent": DEFAULT_USER_AGENT}
     response = requests.get(url, headers=headers, timeout=timeout)
     if response.status_code != 200:
