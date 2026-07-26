@@ -3,6 +3,16 @@
 This is the personal Anki flashcard workflow. For API mechanics (request format, helper scripts, action categories), use the `anki-connect` skill.
 After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report card status (new or not).
 
+## Searching vocabulary
+
+When checking whether a Spanish word already exists as a note, always search both the masculine and feminine forms (e.g. `secretario` and `secretaria`). A single note may cover both genders with an `(nm/f)` tag or similar, so searching only one form can return a false negative. Try the singular masculine, singular feminine, and plural variants before concluding the word is missing.
+
+## Inspecting notes
+
+After creating or editing a note, share an inline-code `anki://x-callback-url/browser?search=nid%3A<noteId>` link so the user can open the note in the Anki desktop/browser UI with one click. For example: `anki://x-callback-url/browser?search=nid%3A1784894070493`. Always use inline code for the URL — do NOT use markdown hyperlink syntax like `[label](anki://...)`, because Discord does not render `anki://` links clickably.
+
+After every note edit or media upload, call the AnkiConnect `sync` action so the changes are pushed to AnkiWeb and other devices.
+
 ## Deck names
 
 Always check the latest deck names by listing them before adding a new note — parent decks may change (the wildcard part). The user often uses short names:
@@ -24,6 +34,8 @@ Always check the latest deck names by listing them before adding a new note — 
 
 ## Note formatting
 
+Anki does **not** render Markdown in note fields. Use HTML for all formatting (e.g. `<br>` for line breaks, `<em><strong>...</strong></em>` for bold + italic, `<ul><li>...</li></ul>` for lists, `<a href="...">...</a>` for links). Markdown like `**bold**`, `*italic*`, `[text](url)`, or `- list item` will appear as raw text on the card.
+
 ### Spanish daily deck cloze (default for new Spanish notes)
 
 - Model: `Cloze`
@@ -38,8 +50,8 @@ Always check the latest deck names by listing them before adding a new note — 
 - Cloze only the Spanish target word; do NOT cloze the English translation
 - Bold + italicize the target word in both sentences with `<em><strong>...</strong></em>`
 - Extra field: add SpanishDict pronunciation audio (see [adding pronunciation](#adding-pronunciation))
-  - Field order: pronunciation audio, then image, then helper notes
-  - Put a `<br>` between the pronunciation audio and the image
+  - Field order: pronunciation audio, then helper notes
+  - Put a `<br>` between the pronunciation audio and helper notes
 
 Example:
 
