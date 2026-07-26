@@ -16,7 +16,7 @@ For example:
 echo 'these are photos for a spanish note "for here or to go" "Para aquí o para llevar", which image do you think is best to add to the note to facillate learning?'  | codex exec -i pexels_*.jpg
 ```
 
-Prioritize using Pexels as the source.
+Prioritize using Brave Search as the source. Fall back to Pexels if Brave is unavailable or returns no usable results.
 
 ## Wikipedia
 
@@ -29,6 +29,27 @@ The JSONPath for the image urls is:
 ```jsonpath
 $.query.pages.*.imageinfo[*].url
 ```
+
+## Brave Search
+
+<https://api-dashboard.search.brave.com/api-reference/images/image_search>
+Authentication via `X-Subscription-Token` header. Free tier is rate-limited to 1 query/sec; paid plans higher.
+
+### [Search images](https://api-dashboard.search.brave.com/api-reference/images/image_search)
+
+Required: `q` (query, up to 400 chars / 50 words). Optional: `count` (1-200, default 50), `safesearch` (`off`|`strict`, default `strict`), `search_lang`, `country`, `spellcheck`.
+
+```sh
+dotenvx run -f ".env.image" -- sh -c 'curl -H "Accept: application/json" -H "Accept-Encoding: gzip" -H "X-Subscription-Token: $BRAVE_API_KEY" "https://api.search.brave.com/res/v1/images/search?q={query}&count=5&safesearch=strict"'
+```
+
+The JSONPath for the image urls is:
+
+```jsonpath
+$.results[*].url
+```
+
+Each result also has `properties.url` (page hosting the image), `thumbnail.url`, `title`, and `source`. The `url` field is the direct image link.
 
 ## Pexels
 

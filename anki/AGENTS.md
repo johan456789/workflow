@@ -158,7 +158,7 @@ Refer to [external-resources/pronunciation.md](external-resources/pronunciation.
 
 Refer to [external-resources/image.md](external-resources/image.md) for sources and commands.
 
-Prioritize Pexels. Download multiple images at a time to reduce request approvals. Pick the best image based on how well the main subject complements the note.
+Prioritize Brave Search. Fall back to Pexels if Brave is unavailable or returns no usable results. Download multiple images at a time to reduce request approvals. Pick the best image based on how well the main subject complements the note.
 
 ## Adding videos
 
