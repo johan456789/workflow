@@ -13,6 +13,12 @@ After creating or editing a note, share an inline-code `anki://x-callback-url/br
 
 After every note edit or media upload, call the AnkiConnect `sync` action so the changes are pushed to AnkiWeb and other devices.
 
+## Drafts vs. creating notes
+
+When the user asks for a **draft** (e.g. "create a draft", "draft a note", "show me a draft"), do NOT call `addNote` or `storeMediaFile`. Only produce and display the proposed note content (fields, HTML, tags, target deck) in the chat for review. Wait for the user to explicitly say to create/add it (or to approve) before writing anything to Anki.
+
+Words like "create", "add", "make a note", or "put this in Anki" mean commit to Anki. "draft" / "sketch" / "propose" mean display only.
+
 ## Deck names
 
 Always check the latest deck names by listing them before adding a new note — parent decks may change (the wildcard part). The user often uses short names:
