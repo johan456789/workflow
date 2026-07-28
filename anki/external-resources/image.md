@@ -40,16 +40,18 @@ Authentication via `X-Subscription-Token` header. Free tier is rate-limited to 1
 Required: `q` (query, up to 400 chars / 50 words). Optional: `count` (1-200, default 50), `safesearch` (`off`|`strict`, default `strict`), `search_lang`, `country`, `spellcheck`.
 
 ```sh
-dotenvx run -f ".env.image" -- sh -c 'curl -H "Accept: application/json" -H "Accept-Encoding: gzip" -H "X-Subscription-Token: $BRAVE_API_KEY" "https://api.search.brave.com/res/v1/images/search?q={query}&count=5&safesearch=strict"'
+dotenvx run -f ".env.image" -- sh -c 'curl -s --compressed -H "Accept: application/json" -H "X-Subscription-Token: $BRAVE_SEARCH_API_KEY" "https://api.search.brave.com/res/v1/images/search?q={query}&count=5&safesearch=strict"'
 ```
 
-The JSONPath for the image urls is:
+Note: do NOT send `Accept-Encoding: gzip` without curl's `--compressed` flag, or the response comes back as gzipped binary.
+
+The JSONPath for the direct image urls is:
 
 ```jsonpath
-$.results[*].url
+$.results[*].properties.url
 ```
 
-Each result also has `properties.url` (page hosting the image), `thumbnail.url`, `title`, and `source`. The `url` field is the direct image link.
+Each result also has `url` (the source page, not the image) and `thumbnail.url`. Use `.properties.url` for the actual image file.
 
 ## Pexels
 
