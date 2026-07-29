@@ -42,6 +42,8 @@ Always check the latest deck names by listing them before adding a new note — 
 
 Anki does **not** render Markdown in note fields. Use HTML for all formatting (e.g. `<br>` for line breaks, `<em><strong>...</strong></em>` for bold + italic, `<ul><li>...</li></ul>` for lists, `<a href="...">...</a>` for links). Markdown like `**bold**`, `*italic*`, `[text](url)`, or `- list item` will appear as raw text on the card.
 
+**Markdown vs HTML:** Markdown is ONLY used in chat to present content to the user readably. Anki note fields MUST use HTML — never put raw Markdown into a note. When showing copyable note content, always provide it as an HTML code block, not Markdown.
+
 ### Spanish daily deck cloze (default for new Spanish notes)
 
 - Model: `Cloze`
