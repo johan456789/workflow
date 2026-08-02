@@ -56,6 +56,10 @@ Always check the latest deck names by listing them before adding a new note — 
 | english deck | `*::_Languages::English🇺🇸` |
 | english daily deck | `*::_Languages::English🇺🇸::Daily life` |
 
+## Tags
+
+By default, do **not** add any tags when creating or editing a note. Only add tags when the user explicitly asks for them (e.g. "tag it as idiom"). When a tag is requested, pass it via the gatekeeper's `--tags` flag.
+
 ## Note formatting
 
 Anki does **not** render Markdown in note fields. Use HTML for all formatting (e.g. `<br>` for line breaks, `<em><strong>...</strong></em>` for bold + italic, `<ul><li>...</li></ul>` for lists, `<a href="...">...</a>` for links). Markdown like `**bold**`, `*italic*`, `[text](url)`, or `- list item` will appear as raw text on the card.
