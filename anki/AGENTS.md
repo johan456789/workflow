@@ -13,6 +13,20 @@ After creating or editing a note, share an inline-code `anki://x-callback-url/br
 
 After every note edit or media upload, call the AnkiConnect `sync` action so the changes are pushed to AnkiWeb and other devices.
 
+## Schema-gated edits (required)
+
+All note writes (`addNote`, `updateNoteFields`) MUST go through the gatekeeper script, never by calling AnkiConnect directly. The script validates fields against `scripts/schemas.json` and rejects (non-zero exit) any violation, so bad formatting can never reach Anki.
+
+```bash
+uv run scripts/anki_edit.py update --id <nid> --fields '{"<Field>": "<html>"}'
+uv run scripts/anki_edit.py add --model "<Model>" --deck "<deck>" --fields '{...}' --tags '[...]'
+uv run scripts/anki_edit.py check  --id <nid>   # lint an existing note without writing
+```
+
+- Add `--normalize` to auto-fix normalizable issues (e.g. join raw newlines with `<br>`) before validating. Without it, violations are rejected.
+- When you add a new note model, add its field rules to `scripts/schemas.json` (use `x-meta` for `forbid`/`require` substrings and `join_with`).
+- Note fields are HTML: join example sentences with `<br>`, never raw newlines, and wrap target words in `<em><strong>…</strong></em>`.
+
 ## Drafts vs. creating notes
 
 When the user asks for a **draft** (e.g. "create a draft", "draft a note", "show me a draft"), do NOT call `addNote` or `storeMediaFile`. Only produce and display the proposed note content (fields, HTML, tags, target deck) in the chat for review. Wait for the user to explicitly say to create/add it (or to approve) before writing anything to Anki.

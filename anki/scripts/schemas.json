@@ -1,0 +1,45 @@
+{
+  "Essential Spanish Vocab Top 5000": {
+    "type": "object",
+    "properties": {
+      "Spanish": {
+        "type": "string",
+        "pattern": ".*\\(nm|nf|adj|v|num|phrase\\)$"
+      },
+      "English": { "type": "string" },
+      "Example sentence (Spanish)": {
+        "type": "string",
+        "x-meta": {
+          "forbid": ["\n"],
+          "require": ["<em><strong>"],
+          "join_with": "<br>"
+        }
+      },
+      "Example sentence (English)": {
+        "type": "string",
+        "x-meta": {
+          "forbid": ["\n"],
+          "require": ["<em><strong>"],
+          "join_with": "<br>"
+        }
+      }
+    }
+  },
+  "Cloze": {
+    "type": "object",
+    "properties": {
+      "Text": {
+        "type": "string",
+        "x-meta": {
+          "forbid": ["\n"],
+          "require": ["{{c1::"],
+          "join_with": "<br>"
+        }
+      },
+      "Extra": {
+        "type": "string",
+        "x-meta": { "forbid": ["\n"], "join_with": "<br>" }
+      }
+    }
+  }
+}
