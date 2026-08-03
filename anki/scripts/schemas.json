@@ -9,16 +9,18 @@
       "English": { "type": "string" },
       "Example sentence (Spanish)": {
         "type": "string",
+        "pattern": "^(?!\\s*\\d+\\.(?:\\s|<br>)).*",
         "x-meta": {
-          "forbid": ["\n"],
+          "forbid": ["\n", "<br><br>"],
           "require": ["<em><strong>"],
           "join_with": "<br>"
         }
       },
       "Example sentence (English)": {
         "type": "string",
+        "pattern": "^(?!\\s*\\d+\\.(?:\\s|<br>)).*",
         "x-meta": {
-          "forbid": ["\n"],
+          "forbid": ["\n", "<br><br>"],
           "require": ["<em><strong>"],
           "join_with": "<br>"
         }
