@@ -182,7 +182,8 @@ Refer to [external-resources/pronunciation.md](external-resources/pronunciation.
 
 - **Spanish vocabulary**: use SpanishDict (human pronunciation, LATAM preferred)
 - **Spanish grammar/sentences**: use ElevenLabs TTS (speed 0.8 for Spanish, 1.0 for English)
-- **English**: refer to the English voice ID in pronunciation.md
+- **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred)
+- **English sentences/grammar**: use ElevenLabs TTS (speed 1.0)
 
 ## Adding images
 

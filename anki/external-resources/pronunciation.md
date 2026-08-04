@@ -54,6 +54,37 @@ Currenlty the `.go` script only supports Spanish and streaming. This is for inte
 echo "<text>" | dotenvx run --quiet -f .env.pronunciation -- go run cartesia.go | ffplay -autoexit -v quiet -nostats -f s16le -ar 44100 -af "aformat=channel_layouts=mono" -
 ```
 
+## English
+
+### Oxford Learner's Dictionaries
+
+Provides human recordings of single headwords with US and UK accents, in mp3 and ogg. Default to **US** accent and **mp3** format for English pronunciation.
+
+```sh
+uv run oxford.py <query> [--accent us|uk|both] [--format mp3|ogg|both] [--output-dir /tmp]
+```
+
+- `--accent`: `us`, `uk`, or `both` (default: `us`)
+- `--format`: `mp3`, `ogg`, or `both` (default: `mp3`)
+- `--json`: list available pronunciation URLs without downloading
+- Output filename format: `ox_{us|uk}_{query}.{mp3|ogg}`
+- Requires a browser User-Agent (plain requests get an empty/302 response)
+- **Only single headwords have audio.** Phrases and phrasal verbs (e.g. "run out") return a valid entry page with no pronunciation audio — the script errors out with that message.
+
+### Cambridge Dictionary
+
+Provides human recordings of words with US and UK accents.
+
+```sh
+uv run cambridge.py <query> [--nation us|uk|both] [--output-dir /tmp]
+```
+
+- `--nation`: `us`, `uk`, or `both` (default: `both`)
+- `--json`: list available pronunciations without downloading
+- Output filename format: `cd_{us|uk}_{query}.mp3`
+
+**Phrasal verbs are NOT supported.** Cambridge records audio only for the headword (e.g. `turn`), not the full phrase (e.g. `turn on`). Phrasal-verb entries are skipped and the script exits with an error rather than returning misleading audio. Use ElevenLabs TTS for phrasal verbs and multi-word phrases instead.
+
 ## Spanish
 
 ### SpanishDict
