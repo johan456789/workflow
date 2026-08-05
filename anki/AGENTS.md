@@ -56,6 +56,10 @@ Always check the latest deck names by listing them before adding a new note — 
 | english deck | `*::_Languages::English🇺🇸` |
 | english daily deck | `*::_Languages::English🇺🇸::Daily life` |
 
+### Domain over language
+
+When a note is about a specific topic (git, databases, design patterns, etc.), put it in the relevant **topical** deck (e.g. `_tmp container::_Software Engineering::_Git`), even if the words themselves are English. Only use the language decks (`English🇺🇸`, `Spanish🇪🇸`) for vocabulary/grammar learning. If it's a technical concept, default to the topical deck — do NOT pick a language deck just because the words are English.
+
 ## Tags
 
 By default, do **not** add any tags when creating or editing a note. Only add tags when the user explicitly asks for them (e.g. "tag it as idiom"). When a tag is requested, pass it via the gatekeeper's `--tags` flag.
