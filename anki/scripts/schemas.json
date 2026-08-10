@@ -13,7 +13,8 @@
         "x-meta": {
           "forbid": ["\n", "<br><br>"],
           "require": ["<em><strong>"],
-          "join_with": "<br>"
+          "join_with": "<br>",
+          "distinct_from": "Example sentence (English)"
         }
       },
       "Example sentence (English)": {
@@ -22,7 +23,8 @@
         "x-meta": {
           "forbid": ["\n", "<br><br>"],
           "require": ["<em><strong>"],
-          "join_with": "<br>"
+          "join_with": "<br>",
+          "distinct_from": "Example sentence (Spanish)"
         }
       }
     }

@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import urllib.request
 from pathlib import Path
@@ -66,7 +67,19 @@ def normalize_field(value: str, meta: dict) -> str:
     return value
 
 
-def validate_field(field: str, value: str, model_schema: dict, normalize: bool):
+def sentence_set(value: str) -> set[str]:
+    """Split HTML field into normalized, deduplicated sentence/hunk set."""
+    out: set[str] = set()
+    for part in re.split(r"<br\s*/?>", value):
+        clean = re.sub(r"<[^>]+>", "", part).strip().lower()
+        clean = re.sub(r"\s+", " ", clean)
+        if clean:
+            out.add(clean)
+    return out
+
+
+def validate_field(field: str, value: str, model_schema: dict, normalize: bool,
+                   context: dict | None = None) -> list[str]:
     """Return list of violation strings. Empty list means valid."""
     violations: list[str] = []
     meta = meta_for(model_schema, field)
@@ -92,6 +105,18 @@ def validate_field(field: str, value: str, model_schema: dict, normalize: bool):
         if need not in value:
             violations.append(f"{field}: missing required substring {need!r}")
 
+    # Cross-field rule: a field must not share sentences with another field
+    # (e.g. the Spanish field must contain no English sentences by comparing
+    # against the paired bilingual field).
+    other = meta.get("distinct_from")
+    if other and context is not None and other in context:
+        mine = sentence_set(value)
+        theirs = sentence_set(context[other])
+        shared = mine & theirs
+        if shared:
+            sample = ", ".join(sorted(shared)[:3])
+            violations.append(f"{field}: overlaps with field {other!r}: {sample}")
+
     return violations
 
 
@@ -102,9 +127,12 @@ def run_update(nid: int, fields: dict, normalize: bool):
     if not model_schema:
         print(f"no schema for model {model!r}; allowing write but consider adding one", file=sys.stderr)
     else:
+        info = anki_request("notesInfo", notes=[nid])
+        context = {f: d.get("value", "") for f, d in info[0]["fields"].items()}
+        context.update(fields)
         all_v = []
         for f, v in fields.items():
-            all_v += validate_field(f, v, model_schema, normalize)
+            all_v += validate_field(f, v, model_schema, normalize, context)
         if all_v:
             print("REJECTED — field validation failed:", file=sys.stderr)
             for line in all_v:
@@ -123,7 +151,7 @@ def run_add(model: str, deck: str, fields: dict, tags: list, normalize: bool):
     if model_schema:
         all_v = []
         for f, v in fields.items():
-            all_v += validate_field(f, v, model_schema, normalize)
+            all_v += validate_field(f, v, model_schema, normalize, context=fields)
         if all_v:
             print("REJECTED — field validation failed:", file=sys.stderr)
             for line in all_v:
@@ -146,9 +174,10 @@ def run_check(nid: int):
         print(f"no schema for model {model!r}")
         return 0
     bad = False
+    fields_val = {f: d.get("value", "") for f, d in info["fields"].items()}
     for f, data in info["fields"].items():
         v = data.get("value", "")
-        vs = validate_field(f, v, model_schema, normalize=False)
+        vs = validate_field(f, v, model_schema, normalize=False, context=fields_val)
         if vs:
             bad = True
             print(f"[{f}]")
