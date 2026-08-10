@@ -4,13 +4,16 @@ This documents where to download images. When downloading image files, default t
 
 Before running any of the commands below, make sure you're in the `external-resources/` directory relative to this workflow.
 
-To evaluate which image is the best for a task run
+To evaluate which image is the best for a task, use the opencode **eyes** subagent first (it can read and describe images). Fall back to `codex exec` only if the eyes subagent is unavailable.
+
+Eyes subagent example:
 
 ```sh
-echo PROMPT | codex exec --image img1.png,img2.jpg
+# (opencode: launch the eyes subagent with a prompt listing the image paths
+#  and asking which single image best facilitates learning)
 ```
 
-For example:
+Codex fallback example:
 
 ```sh
 echo 'these are photos for a spanish note "for here or to go" "Para aquí o para llevar", which image do you think is best to add to the note to facillate learning?'  | codex exec -i pexels_*.jpg
