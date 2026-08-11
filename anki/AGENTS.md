@@ -15,7 +15,24 @@ When checking whether a Spanish word already exists as a note, always search bot
 
 After creating or editing a note, share an inline-code `anki://x-callback-url/browser?search=nid%3A<noteId>` link so the user can open the note in the Anki desktop/browser UI with one click. For example: `anki://x-callback-url/browser?search=nid%3A1784894070493`. Always use inline code for the URL — do NOT use markdown hyperlink syntax like `[label](anki://...)`, because Discord does not render `anki://` links clickably.
 
+When the note's **content or template** changed, also share the preview URL alongside the Anki link — see [Sharing previews](#sharing-previews) in the Card preview server section.
+
 After every note edit or media upload, call the AnkiConnect `sync` action so the changes are pushed to AnkiWeb and other devices.
+
+## Card preview server
+
+`scripts/card_server.py` serves a rendered view of any card over LAN: `http://<host>:4367/<cid>` (e.g. `http://192.168.2.101:4367/1759181638178`), where `<host>` is the machine's LAN IP. It pulls `cardsInfo` from AnkiConnect, embeds the real question/answer HTML + note CSS, and resolves media (images, audio) from `collection.media`.
+
+- **Always check before starting**: another agent may already have the server up. Probe it first: `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4367/` — any HTTP response (200/404) means it's running; only start it if the connection fails.
+- Start it only if needed: `python3 scripts/card_server.py --port 4367` (binds 0.0.0.0; the script's default port is 4367).
+- Use port **4367** — it avoids conflicts with other processes.
+
+### Sharing previews
+
+After any change to a card's **content or template**, share the preview URL together with the Anki URL, e.g.:
+
+- Preview: http://192.168.2.101:4367/<cid> (plain clickable URL)
+- Anki: `anki://x-callback-url/browser?search=nid%3A<noteId>` (inline code, never a markdown link)
 
 ## Schema-gated edits (required)
 
