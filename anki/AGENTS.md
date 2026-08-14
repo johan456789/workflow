@@ -9,6 +9,11 @@ After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report ca
 
 1. **Anki links in chat MUST be inline code, NEVER markdown links.** Discord only supports http and https URLs, so `anki://` links do not render clickably. `[label](anki://...)` and `[label](https://...)` markdown hyperlink syntax is FORBIDDEN for Anki URLs — always output them as inline code: `` `anki://x-callback-url/browser?search=nid%3A<noteId>` ``. This is a recurring mistake — treat any Anki URL you put in a chat message as inline code by default.
 
+2. **After EVERY `addNote`/`updateNoteFields` call (i.e. any content change), the final message MUST include BOTH the Anki link AND the preview URL.** The two always ship together — sending one without the other is a violation of this rule. No reasoning about "did content actually change?" is required: if you wrote to a note, both links go out. Before sending any message after a note write, run this checklist:
+   - [ ] Anki link present as inline code: `` `anki://x-callback-url/browser?search=nid%3A<noteId>` ``
+   - [ ] Preview URL present as plain clickable text: `http://<host>:4367/<cid>` (one URL per card; start the server if needed — see [Card preview server](#card-preview-server))
+   - [ ] `sync` called
+
 ## Searching vocabulary
 
 When checking whether a Spanish word already exists as a note, always search both the masculine and feminine forms (e.g. `secretario` and `secretaria`). A single note may cover both genders with an `(nm/f)` tag or similar, so searching only one form can return a false negative. Try the singular masculine, singular feminine, and plural variants before concluding the word is missing.
