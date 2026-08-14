@@ -119,6 +119,8 @@ Output filename format: `sd_{region}_{query}_{original_filename}.mp3`
 
 This endpoint is not as good as the previous one. So only use it as a fallback.
 
+**Important:** this endpoint serves SpanishDict's **own Acapela TTS**, not a human recording. Response headers include `audio-source: sd-tts-acapela` and trace `acapelaCache.get`. It is hosted on SpanishDict's domain, but the voice is text-to-speech.
+
 ```url
 https://audio1.spanishdict.com/audio?lang=es&text={word}
 ```
