@@ -11,7 +11,7 @@
         "type": "string",
         "pattern": "^(?!\\s*\\d+\\.(?:\\s|<br>)).*",
         "x-meta": {
-          "forbid": ["\n", "<br><br>"],
+          "forbid": ["\n", "<br><br>", "<div", "</div"],
           "require": ["<em><strong>"],
           "join_with": "<br>",
           "distinct_from": "Example sentence (English)"
@@ -21,7 +21,7 @@
         "type": "string",
         "pattern": "^(?!\\s*\\d+\\.(?:\\s|<br>)).*",
         "x-meta": {
-          "forbid": ["\n", "<br><br>"],
+          "forbid": ["\n", "<br><br>", "<div", "</div"],
           "require": ["<em><strong>"],
           "join_with": "<br>",
           "distinct_from": "Example sentence (Spanish)"
@@ -44,6 +44,14 @@
         "type": "string",
         "x-meta": { "forbid": ["\n"], "join_with": "<br>" }
       }
+    }
+  },
+  "Basic (with Extra field) and reversed card": {
+    "type": "object",
+    "properties": {
+      "Front": { "type": "string", "x-meta": { "forbid": ["\n"] } },
+      "Back": { "type": "string", "x-meta": { "forbid": ["\n"] } },
+      "Extra": { "type": "string", "x-meta": { "forbid": ["\n"] } }
     }
   }
 }
