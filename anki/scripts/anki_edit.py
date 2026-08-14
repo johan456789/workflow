@@ -130,6 +130,9 @@ def run_update(nid: int, fields: dict, normalize: bool):
         info = anki_request("notesInfo", notes=[nid])
         context = {f: d.get("value", "") for f, d in info[0]["fields"].items()}
         context.update(fields)
+        if normalize:
+            fields = {f: normalize_field(v, meta_for(model_schema, f)) for f, v in fields.items()}
+            context.update(fields)
         all_v = []
         for f, v in fields.items():
             all_v += validate_field(f, v, model_schema, normalize, context)
@@ -149,6 +152,8 @@ def run_add(model: str, deck: str, fields: dict, tags: list, normalize: bool):
     schemas = load_schemas()
     model_schema = schemas.get(model)
     if model_schema:
+        if normalize:
+            fields = {f: normalize_field(v, meta_for(model_schema, f)) for f, v in fields.items()}
         all_v = []
         for f, v in fields.items():
             all_v += validate_field(f, v, model_schema, normalize, context=fields)
