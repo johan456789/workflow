@@ -3,6 +3,8 @@
 This is the personal Anki flashcard workflow. For API mechanics (request format, helper scripts, action categories), use the `anki-connect` skill.
 After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report card status (new or not).
 
+**NEVER mix up note IDs and card IDs.** `findNotes`/`notesInfo` return **note IDs** (`nid`), while `findCards`/`cardsInfo` operate on **card IDs** (`cid`). The two come from the same ID space — they look identical and can even numerically collide — but they identify different objects. Calling `cardsInfo` with a note ID will silently return a *different, unrelated card's* data (wrong status, wrong deck, wrong content). Always run `findCards` with `nid:<noteId>` to get the real card IDs before calling `cardsInfo`. Same applies in reverse: never pass a card ID to `notesInfo`.
+
 ## Hard rules (NEVER violate)
 
 1. **Anki links in chat MUST be inline code, NEVER markdown links.** Discord only supports http and https URLs, so `anki://` links do not render clickably. `[label](anki://...)` and `[label](https://...)` markdown hyperlink syntax is FORBIDDEN for Anki URLs — always output them as inline code: `` `anki://x-callback-url/browser?search=nid%3A<noteId>` ``. This is a recurring mistake — treat any Anki URL you put in a chat message as inline code by default.
