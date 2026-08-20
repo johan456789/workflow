@@ -211,7 +211,7 @@ Refer to [external-resources/pronunciation.md](external-resources/pronunciation.
 
 - **Spanish vocabulary**: use SpanishDict (human pronunciation, LATAM preferred)
 - **Spanish grammar/sentences**: use ElevenLabs TTS (speed 0.8 for Spanish, 1.0 for English)
-- **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred)
+- **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred). This also covers **common phrases and idioms** (e.g. "due diligence", "bite the bullet") — they are treated as vocabulary, not sentences, so always check the dictionary sources first for a human US recording. Only fall back to ElevenLabs TTS when the dictionary has no audio for that entry.
 - **English sentences/grammar**: use ElevenLabs TTS (speed 1.0)
 
 ## Adding images
