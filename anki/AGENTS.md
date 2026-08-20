@@ -11,7 +11,7 @@ After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report ca
 
 2. **After EVERY `addNote`/`updateNoteFields` call (i.e. any content change), the final message MUST include BOTH the Anki link AND the preview URL.** The two always ship together — sending one without the other is a violation of this rule. No reasoning about "did content actually change?" is required: if you wrote to a note, both links go out. Before sending any message after a note write, run this checklist:
    - [ ] Anki link present as inline code: `` `anki://x-callback-url/browser?search=nid%3A<noteId>` ``
-   - [ ] Preview URL present as plain clickable text: `http://<host>:4367/<cid>` (one URL per card; start the server if needed — see [Card preview server](#card-preview-server))
+   - [ ] Preview URL present as plain clickable text: `http://<host>:4367/<cid>` — **one URL per card, for EVERY card of the note** (cloze notes generate one card per cloze; run `findCards` with `nid:<noteId>` and share every resulting `cid`, not just the first). Start the server if needed — see [Card preview server](#card-preview-server)
    - [ ] `sync` called
 
 ## Searching vocabulary
@@ -36,9 +36,10 @@ After every note edit or media upload, call the AnkiConnect `sync` action so the
 
 ### Sharing previews
 
-After any change to a card's **content or template**, share the preview URL together with the Anki URL, e.g.:
+After any change to a card's **content or template**, share the preview URL together with the Anki URL. This applies to **every modified or newly created card**: for notes that generate multiple cards (e.g. cloze notes), share one preview URL per card ID, labeled with which card it is, e.g.:
 
-- Preview: http://192.168.2.101:4367/<cid> (plain clickable URL)
+- Preview (c1): http://192.168.2.101:4367/<cid1> (plain clickable URL)
+- Preview (c2): http://192.168.2.101:4367/<cid2>
 - Anki: `anki://x-callback-url/browser?search=nid%3A<noteId>` (inline code, never a markdown link)
 
 ## Schema-gated edits (required)
