@@ -78,6 +78,35 @@ def sentence_set(value: str) -> set[str]:
     return out
 
 
+CLOZE_MARKER_RE = re.compile(r"\{\{c")
+CLOZE_OPEN_RE = re.compile(r"\{\{c\d+::")
+
+
+def cloze_syntax_violations(value: str) -> list[str]:
+    """Return violations for malformed or unclosed Anki cloze markers."""
+    violations: list[str] = []
+    markers = list(CLOZE_MARKER_RE.finditer(value))
+
+    for index, marker in enumerate(markers):
+        opening = CLOZE_OPEN_RE.match(value, marker.start())
+        if not opening:
+            violations.append(
+                f"malformed cloze opening at character {marker.start()}; "
+                "expected '{{cN::...}}'"
+            )
+            continue
+
+        close = value.find("}}", opening.end())
+        next_marker = markers[index + 1] if index + 1 < len(markers) else None
+        if close == -1 or (next_marker and close > next_marker.start()):
+            violations.append(
+                f"unclosed cloze opening at character {marker.start()}; "
+                "expected a closing '}}'"
+            )
+
+    return violations
+
+
 def validate_field(field: str, value: str, model_schema: dict, normalize: bool,
                    context: dict | None = None) -> list[str]:
     """Return list of violation strings. Empty list means valid."""
@@ -104,6 +133,9 @@ def validate_field(field: str, value: str, model_schema: dict, normalize: bool,
     for need in meta.get("require", []):
         if need not in value:
             violations.append(f"{field}: missing required substring {need!r}")
+    if meta.get("cloze_syntax"):
+        for violation in cloze_syntax_violations(value):
+            violations.append(f"{field}: {violation}")
 
     # Cross-field rule: a field must not share sentences with another field
     # (e.g. the Spanish field must contain no English sentences by comparing

@@ -37,7 +37,8 @@
         "x-meta": {
           "forbid": ["\n"],
           "require": ["{{c1::"],
-          "join_with": "<br>"
+          "join_with": "<br>",
+          "cloze_syntax": true
         }
       },
       "Extra": {
