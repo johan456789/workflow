@@ -12,7 +12,23 @@ After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report ca
 2. **After EVERY `addNote`/`updateNoteFields` call (i.e. any content change), the final message MUST include BOTH the Anki link AND the preview URL.** The two always ship together — sending one without the other is a violation of this rule. No reasoning about "did content actually change?" is required: if you wrote to a note, both links go out. Before sending any message after a note write, run this checklist:
    - [ ] Anki link present as inline code: `` `anki://x-callback-url/browser?search=nid%3A<noteId>` ``
    - [ ] Preview URL present as plain clickable text: `http://<host>:4367/<cid>` — **one URL per card, for EVERY card of the note** (cloze notes generate one card per cloze; run `findCards` with `nid:<noteId>` and share every resulting `cid`, not just the first). Start the server if needed — see [Card preview server](#card-preview-server)
-   - [ ] `sync` called
+    - [ ] `sync` called
+
+3. **All media storage MUST go through `scripts/media_edit.py`, never raw base64 or `jq --rawfile`.** Adding media via AnkiConnect's base64 `data` param (e.g. `jq --rawfile` piping a binary into `data`) corrupts the file — binary bytes get mangled. The gatekeeper only ever forwards the `path` (or `url`) param of `storeMediaFile`, so agents can never slip in base64 for media. This mirrors the note-write gatekeeper (`anki_edit.py`). Calling `storeMediaFile`/`deleteMediaFile` directly is forbidden.
+   - `jq --rawfile` for **note field HTML** is still fine — that is text, not binary. Only ban it for media.
+
+## Media storage (required)
+
+All media operations (`storeMediaFile`, `deleteMediaFile`, existence checks) MUST go through the gatekeeper script. It validates the file exists and is non-empty, then calls AnkiConnect with `path` only — never `data`/base64.
+
+```bash
+uv run scripts/media_edit.py store  --filename "<name>" --file <path>   # upload a local file
+uv run scripts/media_edit.py delete --filename "<name>"                 # remove media
+uv run scripts/media_edit.py check  --filename "<name>"                 # does the media exist?
+```
+
+- `store`/`delete` call `sync` afterwards by default (matching `anki_edit.py`). Pass `--no-sync` to skip.
+- Never pass binary through `jq --rawfile` into a `data` param — use `--file` with a real on-disk path instead. Text note-field HTML via `jq --rawfile` is fine.
 
 ## Searching vocabulary
 
@@ -209,6 +225,8 @@ Your response should always be in English unless otherwise explicitly specified.
 
 Refer to [external-resources/pronunciation.md](external-resources/pronunciation.md) for available sources and commands.
 
+Upload the fetched audio through the media gatekeeper (never base64/`jq --rawfile`): `uv run scripts/media_edit.py store --filename "<name>.mp3" --file <downloaded_path>`.
+
 - **Spanish vocabulary**: use SpanishDict (human pronunciation, LATAM preferred)
 - **Spanish grammar/sentences**: use ElevenLabs TTS (speed 0.8 for Spanish, 1.0 for English)
 - **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred). This also covers **common phrases and idioms** (e.g. "due diligence", "bite the bullet") — they are treated as vocabulary, not sentences, so always check the dictionary sources first for a human US recording. Only fall back to ElevenLabs TTS when the dictionary has no audio for that entry.
@@ -219,6 +237,8 @@ Refer to [external-resources/pronunciation.md](external-resources/pronunciation.
 Refer to [external-resources/image.md](external-resources/image.md) for sources and commands.
 
 Prioritize Brave Search. Fall back to Pexels if Brave is unavailable or returns no usable results. Download multiple images at a time to reduce request approvals. Pick the best image based on how well the main subject complements the note.
+
+Upload the downloaded image through the media gatekeeper (never base64/`jq --rawfile`): `uv run scripts/media_edit.py store --filename "<name>.jpg" --file <downloaded_path>`.
 
 ## Adding videos
 
