@@ -52,7 +52,23 @@ After every note edit or media upload, call the AnkiConnect `sync` action so the
 
 ### Sharing previews
 
-After any change to a card's **content or template**, share the preview URL together with the Anki URL. This applies to **every modified or newly created card**: for notes that generate multiple cards (e.g. cloze notes), share one preview URL per card ID, labeled with which card it is, e.g.:
+After any change to a card's **content or template**, share the preview URL together with the Anki URL. This applies to **every modified or newly created card**: for notes that generate multiple cards (e.g. cloze notes), share one preview URL per card ID, labeled with which card it is.
+
+**Use `scripts/share_note.py` to generate the URLs — do NOT assemble them by hand.** Card IDs from `findCards` are not ordered by cloze number (c1/c2 mislabeling is a recurring bug), so the script maps each card through `cardsInfo` and sorts by the real `ord` field before labeling. It also starts the preview server if needed and prints the LAN IP:
+
+```bash
+uv run scripts/share_note.py --id <nid>
+```
+
+Output (paste the labeled lines verbatim into chat):
+
+```text
+c1: http://<host>:4367/<cid1>
+c2: http://<host>:4367/<cid2>
+Anki: anki://x-callback-url/browser?search=nid%3A<noteId>
+```
+
+Example of the final message format:
 
 - Preview (c1): http://192.168.2.101:4367/<cid1> (plain clickable URL)
 - Preview (c2): http://192.168.2.101:4367/<cid2>
