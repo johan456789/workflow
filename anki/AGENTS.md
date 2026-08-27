@@ -47,7 +47,7 @@ After every note edit or media upload, call the AnkiConnect `sync` action so the
 `scripts/card_server.py` serves a rendered view of any card over LAN: `http://<host>:4367/<cid>` (e.g. `http://192.168.2.101:4367/1759181638178`), where `<host>` is the machine's LAN IP. It pulls `cardsInfo` from AnkiConnect, embeds the real question/answer HTML + note CSS, and resolves media (images, audio) from `collection.media`.
 
 - **Always check before starting**: another agent may already have the server up. Probe it first: `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:4367/` — any HTTP response (200/404) means it's running; only start it if the connection fails.
-- Start it only if needed, always with a scheduled shutdown after 30 min: `timeout 30m python3 scripts/card_server.py --port 4367` (binds 0.0.0.0; the script's default port is 4367). On macOS use `gtimeout` (coreutils) instead of `timeout`, since it isn't built-in.
+- Start it only if needed. The server self-manages its shutdown: it exits after **30 min of inactivity** (no card/media/landing requests), so it stays up as long as you keep viewing or editing previews and cleans itself up afterward. Just run: `python3 scripts/card_server.py --port 4367` (binds 0.0.0.0; the script's default port is 4367). Pass `--idle-timeout <seconds>` to override the 30 min window.
 - Use port **4367** — it avoids conflicts with other processes.
 
 ### Sharing previews
