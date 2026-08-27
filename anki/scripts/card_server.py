@@ -5,10 +5,14 @@ import json
 import os
 import re
 import sys
+import threading
+import time
 import urllib.parse
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+DEFAULT_IDLE_TIMEOUT = 1800
 
 ANKI_CONNECT = "http://127.0.0.1:8765"
 
@@ -187,6 +191,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_html(code, error_page(code, message))
 
     def do_GET(self):
+        self.server.last_activity = time.monotonic()
         parsed = urllib.parse.urlparse(self.path)
         path = urllib.parse.unquote(parsed.path)
 
@@ -241,11 +246,24 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
+def watchdog(server, idle_timeout):
+    while True:
+        if time.monotonic() - server.last_activity >= idle_timeout:
+            print("idle timeout (%ds) reached — shutting down" % idle_timeout, file=sys.stderr)
+            server.shutdown()
+            return
+        time.sleep(min(5.0, idle_timeout))
+
+
 def main():
     parser = argparse.ArgumentParser(description="Serve rendered Anki cards at /:card_id")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=4367)
     parser.add_argument("--media-dir", default=None, help="Anki collection.media path (auto-detected)")
+    parser.add_argument(
+        "--idle-timeout", type=int, default=DEFAULT_IDLE_TIMEOUT,
+        help="exit after this many seconds with no requests (default %d)" % DEFAULT_IDLE_TIMEOUT,
+    )
     args = parser.parse_args()
 
     media_dir = Path(args.media_dir) if args.media_dir else find_media_dir()
@@ -256,7 +274,11 @@ def main():
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.media_dir = media_dir
+    server.last_activity = time.monotonic()
+    server.idle_timeout = args.idle_timeout
     print("serving on http://%s:%d/ — try /<card-id>" % (args.host, args.port), file=sys.stderr)
+    print("will shut down after %ds of inactivity" % args.idle_timeout, file=sys.stderr)
+    threading.Thread(target=watchdog, args=(server, args.idle_timeout), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

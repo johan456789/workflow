@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import socket
 import subprocess
 import sys
@@ -82,10 +81,7 @@ def server_up(port: int) -> bool:
 def ensure_server(port: int) -> bool:
     if server_up(port):
         return True
-    timeout_bin = shutil.which("gtimeout") or shutil.which("timeout")
     cmd = [sys.executable, str(SCRIPT_DIR / "card_server.py"), "--port", str(port)]
-    if timeout_bin:
-        cmd = [timeout_bin, "30m", *cmd]
     log = open("/tmp/card_server.log", "ab")
     subprocess.Popen(cmd, stdout=log, stderr=log, start_new_session=True)
     for _ in range(100):
