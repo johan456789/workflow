@@ -107,6 +107,31 @@ def cloze_syntax_violations(value: str) -> list[str]:
     return violations
 
 
+def sound_tag_violations(value: str) -> list[str]:
+    """Return violations for malformed [sound:...] tags."""
+    violations: list[str] = []
+    for m in re.finditer(r"\[sound:([^\]]*)\]", value):
+        inner = m.group(1)
+        if inner == "":
+            violations.append(f"empty [sound:] tag at {m.start()}")
+        elif inner != inner.strip():
+            violations.append(
+                f"malformed [sound:{inner}] at {m.start()}: leading/trailing whitespace "
+                f"(use [sound:{inner.strip()}])"
+            )
+        elif "/" in inner or "\\" in inner:
+            violations.append(
+                f"malformed [sound:{inner}] at {m.start()}: must not contain path separators"
+            )
+    # Catch spaced variants like `[sound :` or `[ sound:` that the regex above misses.
+    for m in re.finditer(r"\[\s*sound\s*:", value):
+        if m.group(0) != "[sound:":
+            violations.append(
+                f"malformed sound tag prefix {m.group(0)!r} at {m.start()} (use [sound:)"
+            )
+    return violations
+
+
 def validate_field(field: str, value: str, model_schema: dict, normalize: bool,
                    context: dict | None = None) -> list[str]:
     """Return list of violation strings. Empty list means valid."""
@@ -136,6 +161,10 @@ def validate_field(field: str, value: str, model_schema: dict, normalize: bool,
     if meta.get("cloze_syntax"):
         for violation in cloze_syntax_violations(value):
             violations.append(f"{field}: {violation}")
+
+    # Generic media check: malformed [sound:...] tags (all fields, all models).
+    for violation in sound_tag_violations(value):
+        violations.append(f"{field}: {violation}")
 
     # Cross-field rule: a field must not share sentences with another field
     # (e.g. the Spanish field must contain no English sentences by comparing
