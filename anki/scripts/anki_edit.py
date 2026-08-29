@@ -13,6 +13,11 @@ Usage:
   uv run anki_edit.py add --model "Cloze" --deck "DECK" --fields '{...}' --tags '["x"]'
   uv run anki_edit.py check  --id NID            # lint an existing note, no write
 
+Media (preferred):
+  uv run anki_edit.py add --model Cloze --deck "..." --fields '{...}' \
+    --audio '[{"path": "/tmp/a.mp3", "filename": "a.mp3", "fields": ["Extra"]}]'
+  # AnkiConnect inserts a correct [sound:...] tag — do not hand-write [sound:...].
+
 Flags:
   --normalize   auto-fix normalizable issues (e.g. join lines with <br>)
                 before validating. Without it, violations are rejected.
@@ -181,7 +186,44 @@ def validate_field(field: str, value: str, model_schema: dict, normalize: bool,
     return violations
 
 
-def run_update(nid: int, fields: dict, normalize: bool):
+def validate_media_specs(specs: list, kind: str) -> list[str]:
+    """Validate audio/picture/video specs for addNote/updateNoteFields."""
+    violations: list[str] = []
+    if not isinstance(specs, list):
+        return [f"{kind}: must be a list"]
+    for idx, entry in enumerate(specs):
+        prefix = f"{kind}[{idx}]"
+        if not isinstance(entry, dict):
+            violations.append(f"{prefix}: must be an object")
+            continue
+        filename = entry.get("filename")
+        if not isinstance(filename, str) or not filename.strip():
+            violations.append(f"{prefix}.filename: must be a non-empty string")
+        elif filename != filename.strip():
+            violations.append(f"{prefix}.filename: leading/trailing whitespace (use {filename.strip()!r})")
+        elif "/" in filename or "\\" in filename:
+            violations.append(f"{prefix}.filename: must not contain path separators")
+        has_path = "path" in entry
+        has_url = "url" in entry
+        has_data = "data" in entry
+        if has_data:
+            violations.append(f"{prefix}: 'data' (base64) is forbidden — use 'path' or 'url' with a real file")
+        if not (has_path or has_url):
+            violations.append(f"{prefix}: must have 'path' or 'url'")
+        if has_path:
+            p = Path(str(entry["path"]))
+            if not p.is_file():
+                violations.append(f"{prefix}.path: file does not exist: {entry['path']}")
+            elif p.stat().st_size == 0:
+                violations.append(f"{prefix}.path: file is empty: {entry['path']}")
+        fields = entry.get("fields")
+        if fields is not None:
+            if not isinstance(fields, list) or not all(isinstance(f, str) for f in fields):
+                violations.append(f"{prefix}.fields: must be a list of field names")
+    return violations
+
+
+def run_update(nid: int, fields: dict, normalize: bool, audio=None, picture=None, video=None):
     model = model_for_note(nid)
     schemas = load_schemas()
     model_schema = schemas.get(model)
@@ -203,13 +245,30 @@ def run_update(nid: int, fields: dict, normalize: bool):
                 print(f"  - {line}", file=sys.stderr)
             return 2
 
-    anki_request("updateNoteFields", note={"id": nid, "fields": fields})
+    # Validate media specs even when no schema exists.
+    for kind, specs in (("audio", audio), ("picture", picture), ("video", video)):
+        if specs:
+            mv = validate_media_specs(specs, kind)
+            if mv:
+                print("REJECTED — media validation failed:", file=sys.stderr)
+                for line in mv:
+                    print(f"  - {line}", file=sys.stderr)
+                return 2
+
+    note: dict = {"id": nid, "fields": fields}
+    if audio:
+        note["audio"] = audio
+    if picture:
+        note["picture"] = picture
+    if video:
+        note["video"] = video
+    anki_request("updateNoteFields", note=note)
     anki_request("sync")
     print(f"ok: updated note {nid}")
     return 0
 
 
-def run_add(model: str, deck: str, fields: dict, tags: list, normalize: bool):
+def run_add(model: str, deck: str, fields: dict, tags: list, normalize: bool, audio=None, picture=None, video=None):
     schemas = load_schemas()
     model_schema = schemas.get(model)
     if model_schema:
@@ -223,9 +282,22 @@ def run_add(model: str, deck: str, fields: dict, tags: list, normalize: bool):
             for line in all_v:
                 print(f"  - {line}", file=sys.stderr)
             return 2
-    nid = anki_request("addNote", note={
-        "deckName": deck, "modelName": model, "fields": fields, "tags": tags or []
-    })
+    for kind, specs in (("audio", audio), ("picture", picture), ("video", video)):
+        if specs:
+            mv = validate_media_specs(specs, kind)
+            if mv:
+                print("REJECTED — media validation failed:", file=sys.stderr)
+                for line in mv:
+                    print(f"  - {line}", file=sys.stderr)
+                return 2
+    note: dict = {"deckName": deck, "modelName": model, "fields": fields, "tags": tags or []}
+    if audio:
+        note["audio"] = audio
+    if picture:
+        note["picture"] = picture
+    if video:
+        note["video"] = video
+    nid = anki_request("addNote", note=note)
     anki_request("sync")
     print(f"ok: added note {nid}")
     return 0
@@ -261,6 +333,9 @@ def main() -> int:
     up.add_argument("--id", type=int, required=True)
     up.add_argument("--fields", required=True, help="JSON object of field->value")
     up.add_argument("--normalize", action="store_true")
+    up.add_argument("--audio", default="[]", help="JSON list of audio specs (AnkiConnect audio param)")
+    up.add_argument("--picture", default="[]", help="JSON list of picture specs")
+    up.add_argument("--video", default="[]", help="JSON list of video specs")
 
     ad = sub.add_parser("add")
     ad.add_argument("--model", required=True)
@@ -268,15 +343,24 @@ def main() -> int:
     ad.add_argument("--fields", required=True)
     ad.add_argument("--tags", default="[]")
     ad.add_argument("--normalize", action="store_true")
+    ad.add_argument("--audio", default="[]", help="JSON list of audio specs (AnkiConnect audio param)")
+    ad.add_argument("--picture", default="[]", help="JSON list of picture specs")
+    ad.add_argument("--video", default="[]", help="JSON list of video specs")
 
     ck = sub.add_parser("check")
     ck.add_argument("--id", type=int, required=True)
 
     args = p.parse_args()
     if args.cmd == "update":
-        return run_update(args.id, json.loads(args.fields), args.normalize)
+        return run_update(
+            args.id, json.loads(args.fields), args.normalize,
+            audio=json.loads(args.audio), picture=json.loads(args.picture), video=json.loads(args.video),
+        )
     if args.cmd == "add":
-        return run_add(args.model, args.deck, json.loads(args.fields), json.loads(args.tags), args.normalize)
+        return run_add(
+            args.model, args.deck, json.loads(args.fields), json.loads(args.tags), args.normalize,
+            audio=json.loads(args.audio), picture=json.loads(args.picture), video=json.loads(args.video),
+        )
     if args.cmd == "check":
         return run_check(args.id)
     return 2
