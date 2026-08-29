@@ -14,8 +14,9 @@ After `findNotes`/`findCards`, always call `notesInfo`/`cardsInfo` and report ca
    - [ ] Preview URL present as plain clickable text: `http://<host>:4367/<cid>` — **one URL per card, for EVERY card of the note** (cloze notes generate one card per cloze; run `findCards` with `nid:<noteId>` and share every resulting `cid`, not just the first). Start the server if needed — see [Card preview server](#card-preview-server)
     - [ ] `sync` called
 
-3. **All media storage MUST go through `scripts/media_edit.py`, never raw base64 or `jq --rawfile`.** Adding media via AnkiConnect's base64 `data` param (e.g. `jq --rawfile` piping a binary into `data`) corrupts the file — binary bytes get mangled. The gatekeeper only ever forwards the `path` (or `url`) param of `storeMediaFile`, so agents can never slip in base64 for media. This mirrors the note-write gatekeeper (`anki_edit.py`). Calling `storeMediaFile`/`deleteMediaFile` directly is forbidden.
+3. **All media storage MUST go through `scripts/media_edit.py` or `scripts/anki_edit.py --audio/--picture`, never raw base64 or `jq --rawfile`.** Adding media via AnkiConnect's base64 `data` param (e.g. `jq --rawfile` piping a binary into `data`) corrupts the file — binary bytes get mangled. The gatekeepers only ever forward `path` (or `url`), so agents can never slip in base64 for media. This mirrors the note-write gatekeeper (`anki_edit.py`). Calling `storeMediaFile`/`deleteMediaFile` directly is forbidden.
    - `jq --rawfile` for **note field HTML** is still fine — that is text, not binary. Only ban it for media.
+   - **For audio/picture/video attached to notes, prefer `anki_edit.py --audio/--picture/--video`** — it atomically stores the file and inserts a correct `[sound:...]` tag (no manual tag needed). Manual `[sound:...]` is deprecated and linted (leading/trailing whitespace, empty, or path separators are rejected).
 
 ## Media storage (required)
 
@@ -87,6 +88,13 @@ uv run scripts/anki_edit.py check  --id <nid>   # lint an existing note without 
 - Add `--normalize` to auto-fix normalizable issues (e.g. join raw newlines with `<br>`) before validating. Without it, violations are rejected.
 - When you add a new note model, add its field rules to `scripts/schemas.json` (use `x-meta` for `forbid`/`require` substrings and `join_with`).
 - Note fields are HTML: join example sentences with `<br>`, never raw newlines, and wrap target words in `<em><strong>…</strong></em>`.
+- **Media attached to notes:** prefer the gatekeeper's `--audio`/`--picture`/`--video` flags — they call AnkiConnect's `audio`/`picture`/`video` params which atomically store the file and append a correct `[sound:...]` tag to the listed fields. Manual `[sound:...]` tags are deprecated and linted for whitespace/empty/path errors.
+  ```bash
+  uv run scripts/anki_edit.py add --model Cloze --deck "..." --fields '{...}' \
+    --audio '[{"path": "/tmp/ox_us_sludge.mp3", "filename": "ox_us_sludge.mp3", "fields": ["Extra"]}]'
+  uv run scripts/anki_edit.py update --id <nid> --fields '{"Extra": "hello"}' \
+    --audio '[{"path": "/tmp/a.mp3", "filename": "a.mp3", "fields": ["Extra"]}]'
+  ```
 
 ## Drafts vs. creating notes
 
@@ -243,6 +251,8 @@ Refer to [external-resources/pronunciation.md](external-resources/pronunciation.
 
 Upload the fetched audio through the media gatekeeper (never base64/`jq --rawfile`): `uv run scripts/media_edit.py store --filename "<name>.mp3" --file <downloaded_path>`.
 
+For audio attached to a note, prefer `anki_edit.py --audio` — it stores and tags atomically (see [Schema-gated edits](#schema-gated-edits-required)).
+
 - **Spanish vocabulary**: use SpanishDict (human pronunciation, LATAM preferred)
 - **Spanish grammar/sentences**: use ElevenLabs TTS (speed 0.8 for Spanish, 1.0 for English)
 - **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred). This also covers **common phrases and idioms** (e.g. "due diligence", "bite the bullet") — they are treated as vocabulary, not sentences, so always check the dictionary sources first for a human US recording. Only fall back to ElevenLabs TTS when the dictionary has no audio for that entry.
@@ -255,6 +265,8 @@ Refer to [external-resources/image.md](external-resources/image.md) for sources 
 Prioritize Brave Search. Fall back to Pexels if Brave is unavailable or returns no usable results. Download multiple images at a time to reduce request approvals. Pick the best image based on how well the main subject complements the note.
 
 Upload the downloaded image through the media gatekeeper (never base64/`jq --rawfile`): `uv run scripts/media_edit.py store --filename "<name>.jpg" --file <downloaded_path>`.
+
+For images attached to a note, you can also use `anki_edit.py --picture` to store and tag atomically.
 
 ## Adding videos
 
