@@ -4,7 +4,7 @@ This documents where to download images. When downloading image files, default t
 
 Before running any of the commands below, make sure you're in the `external-resources/` directory relative to this workflow.
 
-To evaluate which image is the best for a task, use the opencode **eyes** subagent first (it can read and describe images). Fall back to `codex exec` only if the eyes subagent is unavailable.
+To evaluate which image is the best for a task, read the images yourself if you are multimodal. Otherwise use the opencode **eyes** subagent (it can read and describe images); fall back to `codex exec` only if the eyes subagent is unavailable. Apply this checklist, in order: (1) horizontal/landscape orientation, (2) target subject front and center, filling the frame, (3) single subject on a plain background — no clutter, props, or styled-photography setups, (4) no people or faces unless the word is an action verb that needs a human demonstrating it, (5) no watermarks or text overlays, (6) usable license — Pexels, Pixabay, Unsplash, or Wikimedia Commons only; reject Dreamstime/Getty/iStock previews.
 
 Eyes subagent example:
 

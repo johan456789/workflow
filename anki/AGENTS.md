@@ -262,7 +262,7 @@ For audio attached to a note, prefer `anki_edit.py --audio` — it stores and ta
 
 Refer to [external-resources/image.md](external-resources/image.md) for sources and commands.
 
-Prioritize Brave Search. Fall back to Pexels if Brave is unavailable or returns no usable results. Download multiple images at a time to reduce request approvals. Pick the best image based on how well the main subject complements the note.
+Prioritize Brave Search. Fall back to Pexels if Brave is unavailable or returns no usable results. Download multiple images at a time to reduce request approvals. Pick the winner per the image-selection checklist in [external-resources/image.md](external-resources/image.md).
 
 Upload the downloaded image through the media gatekeeper (never base64/`jq --rawfile`): `uv run scripts/media_edit.py store --filename "<name>.jpg" --file <downloaded_path>`.
 
