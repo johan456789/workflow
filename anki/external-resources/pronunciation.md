@@ -73,6 +73,15 @@ uv run oxford.py <query> [--accent us|uk|both] [--format mp3|ogg|both] [--output
 
 ### Cambridge Dictionary
 
+> **Status (2026-09-22): BLOCKED by Cloudflare managed challenge.**
+> `cf-mitigated: challenge` + "Just a moment..." on all page fetches (single
+> words and phrases alike). Confirmed with plain `requests`, `curl_cffi` TLS
+> impersonation (chrome120/124, safari18), and headless Chromium (plain and
+> stealth flags, 45s wait — challenge never clears). Last known-good fetch was
+> 2026-09-10. These blocks often rotate, so retry before writing it off
+> permanently — but until then, use Oxford first and skip Cambridge without
+> re-diagnosing. See thread `1552062205128609864` for the full investigation.
+
 Provides human recordings of words with US and UK accents.
 
 ```sh
