@@ -255,7 +255,8 @@ For audio attached to a note, prefer `anki_edit.py --audio` — it stores and ta
 
 - **Spanish vocabulary**: use SpanishDict (human pronunciation, LATAM preferred)
 - **Spanish grammar/sentences**: use ElevenLabs TTS (speed 0.8 for Spanish, 1.0 for English)
-- **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred). This also covers **common phrases and idioms** (e.g. "due diligence", "bite the bullet") — they are treated as vocabulary, not sentences, so always check the dictionary sources first for a human US recording. Only fall back to ElevenLabs TTS when the dictionary has no audio for that entry.
+- **English vocabulary**: use Oxford Learner's Dictionaries or Cambridge Dictionary (human pronunciation, US accent preferred). This also covers **common phrases and idioms** (e.g. "due diligence", "bite the bullet") — they are treated as vocabulary, not sentences, so always check the dictionary sources first for a human US recording.
+- **English phrases/idioms with no dictionary audio**: multi-word phrases (e.g. "pennies on the dollar") often have no dictionary audio. **Check Forvo before falling back to TTS** — it often has a human recording of the full phrase. Only use ElevenLabs TTS (speed 1.0) when Forvo has no pronunciation either.
 - **English sentences/grammar**: use ElevenLabs TTS (speed 1.0)
 
 ## Adding images

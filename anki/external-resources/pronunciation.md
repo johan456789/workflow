@@ -10,6 +10,8 @@ Before running any of the commands below, make sure you're in the `external-reso
 
 This provides human recordings of words and phrases. By default, use `corporate` endpoint.
 
+Forvo also covers **multi-word phrases and idioms** — if Oxford/Cambridge return no audio for a phrase, check Forvo before falling back to TTS.
+
 ```sh
 uv run --env-file ".env.pronunciation" forvo.py \
        --endpoint corporate \
@@ -92,7 +94,7 @@ uv run cambridge.py <query> [--nation us|uk|both] [--output-dir /tmp]
 - `--json`: list available pronunciations without downloading
 - Output filename format: `cd_{us|uk}_{query}.mp3`
 
-**Phrasal verbs are NOT supported.** Cambridge records audio only for the headword (e.g. `turn`), not the full phrase (e.g. `turn on`). Phrasal-verb entries are skipped and the script exits with an error rather than returning misleading audio. Use ElevenLabs TTS for phrasal verbs and multi-word phrases instead.
+**Phrasal verbs are NOT supported.** Cambridge records audio only for the headword (e.g. `turn`), not the full phrase (e.g. `turn on`). Phrasal-verb entries are skipped and the script exits with an error rather than returning misleading audio. Check Forvo for a human recording of the full phrase first; use ElevenLabs TTS only when Forvo has nothing.
 
 ## Spanish
 
